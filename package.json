@@ -1,7 +1,7 @@
 {
   "name": "@mapbox/mbtiles-geostats",
   "version": "0.1.0-dev",
-  "description": "Create a geostats JSON object from gzipped tile buffers",
+  "description": "Generate a tilestats/geostats JSON object from a series of Mapbox Vector Tile gzipped buffers",
   "url": "http://github.com/mapbox/mbtiles-geostats",
   "main": "./lib/index.js",
   "repository": {
