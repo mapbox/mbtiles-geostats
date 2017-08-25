@@ -1,0 +1,37 @@
+{
+  "name": "@mapbox/mbtiles-geostats",
+  "version": "0.1.0-dev",
+  "description": "Create a geostats JSON object from gzipped tile buffers",
+  "url": "http://github.com/mapbox/mbtiles-geostats",
+  "main": "./lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mapbox/mbtiles-geostats.git"
+  },
+  "scripts": {
+    "test": "tape test/*.test.js",
+    "prepublish": "npm ls",
+    "install": "node-pre-gyp install --fallback-to-build",
+    "docs": "documentation readme src/*.cpp --polyglot --section=API"
+  },
+  "author": "Mapbox",
+  "license": "ISC",
+  "dependencies": {
+    "nan": "~2.5.1",
+    "node-pre-gyp": "~0.6.32"
+  },
+  "bundledDependencies": [
+    "node-pre-gyp"
+  ],
+  "devDependencies": {
+    "minimist": "~1.2.0",
+    "tape": "^4.5.1"
+  },
+  "binary": {
+    "module_name": "mbtiles_geostats",
+    "module_path": "./lib/binding/",
+    "host": "https://mapbox-node-binary.s3.amazonaws.com",
+    "remote_path": "./{name}/v{version}/{configuration}/{toolset}/",
+    "package_name": "{node_abi}-{platform}-{arch}.tar.gz"
+  }
+}
