@@ -1,3 +1,16 @@
+        var mbx-geostats = require('mab-geostats');
+        var statsObj = new mbx-geostats; // constructor, setup internal datastore (c++ Map object to hold stats)
+
+        zxyStream.on('error', reject)
+          .pipe(readStream)
+          .pipe(new TileAnalyzeStream(statsObj.getStatsFromBuffer)) // Peek into buffer, grab stats and put them to Map object (with some deduping logic), then ditch Buffer
+
+        statsObj.getStats
+
+        // stats, all possible 
+
+
+
 #include "mbtiles-geostats.hpp"
 #include <string>
 #include <iostream>
@@ -18,13 +31,11 @@ NAN_METHOD(MBTilesGeostats::New)
 {
     if (info.IsConstructCall())
     {
-        // create some sort of map for the stats object
-        Nan::Utf8String utf8_value(info[0]);
-        int len = utf8_value.length();
-        std::string name(*utf8_value, len);
+        // create some sort of map for the stats object (std::map)
+        std::string statsMap = "abc";
 
         // create new geostats class
-        auto* const self = new MBTilesGeostats(std::move(name));
+        auto* const self = new MBTilesGeostats();
         self->Wrap(info.This());
 
         info.GetReturnValue().Set(info.This());
@@ -44,6 +55,7 @@ NAN_METHOD(MBTilesGeostats::New)
  * @example
  * var MBTilesGeostats = require('@mapbox/mbtiles-geostats');
  * var mbs = new MBTilesGeostats();
+ * var buffers = 
  * buffers.forEach(function(buffer) {
  *   mbs.addBuffer(buffer);
  * });
