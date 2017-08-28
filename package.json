@@ -24,6 +24,7 @@
     "node-pre-gyp"
   ],
   "devDependencies": {
+    "@mapbox/cloudfriend": "^1.8.2",
     "minimist": "~1.2.0",
     "tape": "^4.5.1"
   },
