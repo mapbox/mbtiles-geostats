@@ -18,7 +18,8 @@ class MBTilesGeostats : public Nan::ObjectWrap
   	dedupe();
   	// Will this tie to the MBTilesGeostats instance? 
   	// Or does the statsMap have to more expliclty be tied to the instance in cpp?
-  	static std::string statsMap = "abc"; 
+  	// Also, we'd would NOT want it to be static, so that it is tied to an instance of the class
+  	std::string statsMap = "abc"; 
     std::string _name;
     int _number_of_buffers = 0;
 };
