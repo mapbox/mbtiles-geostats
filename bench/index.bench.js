@@ -13,7 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert')
 const d3_queue = require('d3-queue');
-const MBS = require('../lib/index.js').MBTilesGeostats;
+const MBS = require('../lib/index.js');
 const mbs = new MBS();
 let runs = 0;
 

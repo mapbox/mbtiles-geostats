@@ -5,7 +5,6 @@ namespace mbtiles_geostats {
 
 class MBTilesGeostats : public Nan::ObjectWrap
 {
-
   public:
     static void Init(v8::Local<v8::Object> target);
     static NAN_METHOD(New);
@@ -15,6 +14,7 @@ class MBTilesGeostats : public Nan::ObjectWrap
     MBTilesGeostats(std::string&& name);
 
   private:
-    std::string name_;
+    std::string _name;
+    int _number_of_buffers = 0;
 };
 }

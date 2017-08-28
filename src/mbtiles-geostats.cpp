@@ -1,4 +1,6 @@
 #include "mbtiles-geostats.hpp"
+#include <string>
+#include <iostream>
 
 /**
  * Create an mbtiles geostats class
@@ -10,7 +12,7 @@
 
 namespace mbtiles_geostats {
 
-MBTilesGeostats::MBTilesGeostats(std::string&& name) : name_(std::move(name)) {}
+MBTilesGeostats::MBTilesGeostats(std::string&& name) : _name(std::move(name)) {}
 
 NAN_METHOD(MBTilesGeostats::New)
 {
@@ -21,7 +23,7 @@ NAN_METHOD(MBTilesGeostats::New)
         int len = utf8_value.length();
         std::string name(*utf8_value, len);
 
-        // create new geostats class, which will have ownerhip of this map object
+        // create new geostats class
         auto* const self = new MBTilesGeostats(std::move(name));
         self->Wrap(info.This());
 
@@ -48,6 +50,22 @@ NAN_METHOD(MBTilesGeostats::New)
  */
 NAN_METHOD(MBTilesGeostats::addBuffer)
 {
+    // check if first parameter is defined
+    v8::Local<v8::Value> buffer_val = info[0];
+    if (buffer_val->IsNull() ||
+        buffer_val->IsUndefined()) {
+            return Nan::ThrowTypeError("No value passed into \"addBuffer\"");
+    }
+
+    v8::Local<v8::Object> buffer = buffer_val->ToObject();
+    if (!node::Buffer::HasInstance(buffer)) {
+        return Nan::ThrowTypeError("Value passed into \"addBuffer\" is not a buffer");
+    }
+
+    // now try gunzipping buffer
+        // if it is already unzipped, go ahead
+        // if not, unzip, if it fails, throw an error
+
     /**
      * Note: a HandleScope is automatically included inside NAN_METHOD. See the
      * docs at NAN that say:
@@ -67,10 +85,13 @@ NAN_METHOD(MBTilesGeostats::addBuffer)
      */
     auto* h = Nan::ObjectWrap::Unwrap<MBTilesGeostats>(info.Holder());
 
+    h->_number_of_buffers++;
+
+
     // "info" comes from the NAN_METHOD macro, which returns differently
     // according to the version of node
     info.GetReturnValue().Set(
-        Nan::New<v8::String>("...initialized an object..." + h->name_)
+        Nan::New<v8::String>("...initialized an object..." + h->_name)
             .ToLocalChecked());
 }
 
