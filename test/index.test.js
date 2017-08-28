@@ -1,8 +1,8 @@
 const test = require('tape');
-const MBS = require('../lib');
+const MBTilesGeostats = require('../lib');
 
 test('does the thing', (assert) => {
-  const mbs = new MBS.MBTilesGeostats();
+  const mbs = new MBTilesGeostats();
   console.log(mbs.addBuffer());
   assert.end();
 });
