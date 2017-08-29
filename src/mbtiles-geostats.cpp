@@ -39,11 +39,12 @@ NAN_METHOD(MBTilesGeostats::New)
 }
 
 /**
- * Add a buffer to the stats object
+ * Add a buffer to the stats object (asynchronous)
  *
  * @name addBuffer
  * @memberof MBTilesGeostats
  * @param {Buffer} buffer - a gzipped buffer representing a Mapbox Vector Tile
+ * @param {Function} callback - returns error
  * @example
  * var MBTilesGeostats = require('@mapbox/mbtiles-geostats');
  * var mbs = new MBTilesGeostats();
@@ -76,8 +77,8 @@ NAN_METHOD(MBTilesGeostats::addBuffer)
       }
       v8::Local<v8::Function> callback = callback_val.As<v8::Function>();
 
+      // Grab buffer from first arg passed from JS world
       v8::Local<v8::Value> buffer_val = info[0];
-
       if (buffer_val->IsNull() ||
         buffer_val->IsUndefined()) {
         CallbackError("first arg 'buffer' must be a Protobuf buffer object", callback);
@@ -135,17 +136,27 @@ NAN_METHOD(MBTilesGeostats::addBuffer)
     else {
         return Nan::ThrowTypeError("must provide buffer arg");
     }
-
-
-
 }
 
+/**
+ * Get final stats object (synchronous)
+ *
+ * @name getStats
+ * @memberof MBTilesGeostats
+
+ * @example
+ * var MBTilesGeostats = require('@mapbox/mbtiles-geostats');
+ * var mbs = new MBTilesGeostats();
+ *
+ * var stats = mbs.getStats();
+ * 
+ */
 NAN_METHOD(MBTilesGeostats::getStats)
 {
-
+    // Grab instance object pointer
     auto* h = Nan::ObjectWrap::Unwrap<MBTilesGeostats>(info.Holder());
 
-    // taking string in c++, turning it into JS string, and sending it back to JS world
+    // This is taking a string in c++, turning it into a JS string, and sending it back to JS world
     // Synchronous
     info.GetReturnValue().Set(
         Nan::New<v8::String>(h->statsMap)
