@@ -12,7 +12,13 @@
 
 namespace mbtiles_geostats {
 
+inline void CallbackError(std::string message, v8::Local<v8::Function> callback) {
+    v8::Local<v8::Value> argv[1] = { Nan::Error(message.c_str()) };
+    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), callback, 1, argv);
+}
+
 MBTilesGeostats::MBTilesGeostats() {
+    // create some sort of map for the stats object (std::map)
     std::string statsMap = "abc";
 }
 
@@ -20,11 +26,8 @@ NAN_METHOD(MBTilesGeostats::New)
 {
     if (info.IsConstructCall())
     {
-        // create some sort of map for the stats object (std::map)
-        std::string statsMap = "abc";
-
         // create new geostats class
-        auto* const self = new MBTilesGeostats(std::move(statsMap));
+        auto* const self = new MBTilesGeostats();
         self->Wrap(info.This());
 
         info.GetReturnValue().Set(info.This());
@@ -44,9 +47,11 @@ NAN_METHOD(MBTilesGeostats::New)
  * @example
  * var MBTilesGeostats = require('@mapbox/mbtiles-geostats');
  * var mbs = new MBTilesGeostats();
- * var buffers = 
+ * 
  * buffers.forEach(function(buffer) {
- *   mbs.addBuffer(buffer);
+ *   mbs.addBuffer(buffer, function(err) {
+ *       if (err) return new Error();
+ *   });
  * });
  */
 NAN_METHOD(MBTilesGeostats::addBuffer)
@@ -56,50 +61,98 @@ NAN_METHOD(MBTilesGeostats::addBuffer)
     // put them to Map object (with some deduping logic)
     // then ditch Buffer
 
-    // check if first parameter is defined
-    v8::Local<v8::Value> buffer_val = info[0];
-    if (buffer_val->IsNull() ||
-        buffer_val->IsUndefined()) {
-            return Nan::ThrowTypeError("No value passed into \"addBuffer\"");
-    }
 
-    v8::Local<v8::Object> buffer = buffer_val->ToObject();
-    if (!node::Buffer::HasInstance(buffer)) {
-        return Nan::ThrowTypeError("Value passed into \"addBuffer\" is not a buffer");
-    }
+
+    // This is returning our MBTilesGeostats instance/object
+    auto* h = Nan::ObjectWrap::Unwrap<MBTilesGeostats>(info.Holder());  
+
+
+    if (info.Length() >= 2) {
+      // CALLBACK: ensure callback is a function
+      v8::Local<v8::Value> callback_val = info[info.Length()-1];
+      if (!callback_val->IsFunction()) {
+          Nan::ThrowError("last argument must be a callback function");
+          return;
+      }
+      v8::Local<v8::Function> callback = callback_val.As<v8::Function>();
+
+      v8::Local<v8::Value> buffer_val = info[0];
+
+      if (buffer_val->IsNull() ||
+        buffer_val->IsUndefined()) {
+        CallbackError("first arg 'buffer' must be a Protobuf buffer object", callback);
+        return;
+      }
+      // fast access to the buffer
+      v8::Local<v8::Object> buffer = buffer_val->ToObject();
+
+      if (buffer->IsNull() ||
+          buffer->IsUndefined() ||
+          !node::Buffer::HasInstance(buffer)) {
+          CallbackError("first arg 'buffer' must be a Protobuf buffer object", callback);
+          return;
+      }
+
+      /**
+      // "h" is a pointer to the class we defined
+      // In order to access the class's vars (ex: statsMap):
+      // - you can either use pointer indexing to reach through the pointer to the actual value
+      //            OR
+      // - you can derefence the pointer
+      // No difference in performance
+
+     
+      // Dereference example:
+      // You have to make the class object modifiable (dont use "const") if you plan to modify a value within it
+      MBTilesGeostats & stats = *h; // derefencing (when I want the value out of the pointer)
+      
+      // not const because we're modifying the maps
+      std::string & statsMap = stats.statsMap;
+      
+      */
+      
+      // Pointer index example:
+      // "->"" is reaching through the pointer to get the actual object val
+      std::string & oldString = h->statsMap; // This is a reference to statsMap var, since it's using "&"
+      
+      // This is a fancy string function that take a buffer and its length,
+      // and returns a char pointer/c string (const char*)
+      // Beware: This is copying the data
+      std::string data(node::Buffer::Data(buffer), node::Buffer::Length(buffer));
+
+      // Reset old string reference to the new value
+      oldString = oldString + data; 
 
     // now try gunzipping buffer
         // if it is already unzipped, go ahead
         // if not, unzip, if it fails, throw an error
 
-    /**
-     * Note: a HandleScope is automatically included inside NAN_METHOD. See the
-     * docs at NAN that say:
-     * 'Note that an implicit HandleScope is created for you on
-     * JavaScript-accessible methods so you do not need to insert one yourself.'
-     * at
-     * https://github.com/nodejs/nan/blob/2dfc5c2d19c8066903a19ced6a72c06d2c825dec/doc/scopes.md#nanhandlescope
+      // Return callback
+      v8::Local<v8::Value> argv[1] = { Nan::Null() };
+      Nan::MakeCallback(Nan::GetCurrentContext()->Global(), callback, 1, argv);
 
-     * "What is node::ObjectWrap???" The short version is that node::ObjectWrap
-     * and wrapping/unwrapping objects
-     * is the somewhat clumsy way it is possible to bind Node and C++. The main
-     * points to remember:
-     *   - To access a class instance inside a C++ static method, you must unwrap
-     * the object.
-     *   - The C++ methods must be static to make them available at startup across
-     * the language boundary (JS <-> C++).
-     */
+    }
+    else {
+        return Nan::ThrowTypeError("must provide buffer arg");
+    }
+
+
+
+}
+
+NAN_METHOD(MBTilesGeostats::getStats)
+{
+
     auto* h = Nan::ObjectWrap::Unwrap<MBTilesGeostats>(info.Holder());
 
-    h->_number_of_buffers++;
-
-
-    // "info" comes from the NAN_METHOD macro, which returns differently
-    // according to the version of node
+    // taking string in c++, turning it into JS string, and sending it back to JS world
+    // Synchronous
     info.GetReturnValue().Set(
-        Nan::New<v8::String>("...initialized an object..." + h->_name)
-            .ToLocalChecked());
+        Nan::New<v8::String>(h->statsMap)
+        .ToLocalChecked());
+
 }
+
 
 // This is a Singleton, which is a general programming design concept for
 // creating an instance once within a process.
@@ -139,6 +192,7 @@ void MBTilesGeostats::Init(v8::Local<v8::Object> target)
     // "hello" is therefore like a property of the fnTp object
     // ex: console.log(MBTilesGeostats.hello) --> [Function: hello]
     SetPrototypeMethod(fnTp, "addBuffer", addBuffer);
+    SetPrototypeMethod(fnTp, "getStats", getStats);
 
     // Create an unique instance of the MBTilesGeostats function template,
     // then set this unique instance to the target
