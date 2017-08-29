@@ -1,4 +1,6 @@
 #include "mbtiles-geostats.hpp"
+#include <protozero/pbf_reader.hpp>
+#include <gzip.hpp>
 #include <string>
 #include <iostream>
 
@@ -48,7 +50,7 @@ NAN_METHOD(MBTilesGeostats::New)
  * @example
  * var MBTilesGeostats = require('@mapbox/mbtiles-geostats');
  * var mbs = new MBTilesGeostats();
- * 
+ *
  * buffers.forEach(function(buffer) {
  *   mbs.addBuffer(buffer, function(err) {
  *       if (err) return new Error();
@@ -57,16 +59,19 @@ NAN_METHOD(MBTilesGeostats::New)
  */
 NAN_METHOD(MBTilesGeostats::addBuffer)
 {
-    // Peek into buffer (decompress), 
-    // grab stats 
+    // Peek into buffer (decompress),
+    // grab stats
     // put them to Map object (with some deduping logic)
     // then ditch Buffer
 
 
 
     // This is returning our MBTilesGeostats instance/object
-    auto* h = Nan::ObjectWrap::Unwrap<MBTilesGeostats>(info.Holder());  
+    auto* h = Nan::ObjectWrap::Unwrap<MBTilesGeostats>(info.Holder());
 
+    // test out gzip functionality
+    std::string uncompressed_data = "hello";
+    std::string compressed_data = gzip::compress(uncompressed_data);
 
     if (info.Length() >= 2) {
       // CALLBACK: ensure callback is a function
@@ -102,27 +107,27 @@ NAN_METHOD(MBTilesGeostats::addBuffer)
       // - you can derefence the pointer
       // No difference in performance
 
-     
+
       // Dereference example:
       // You have to make the class object modifiable (dont use "const") if you plan to modify a value within it
       MBTilesGeostats & stats = *h; // derefencing (when I want the value out of the pointer)
-      
+
       // not const because we're modifying the maps
       std::string & statsMap = stats.statsMap;
-      
+
       */
-      
+
       // Pointer index example:
       // "->"" is reaching through the pointer to get the actual object val
       std::string & oldString = h->statsMap; // This is a reference to statsMap var, since it's using "&"
-      
+
       // This is a fancy string function that take a buffer and its length,
       // and returns a char pointer/c string (const char*)
       // Beware: This is copying the data
       std::string data(node::Buffer::Data(buffer), node::Buffer::Length(buffer));
 
       // Reset old string reference to the new value
-      oldString = oldString + data; 
+      oldString = oldString + data;
 
     // now try gunzipping buffer
         // if it is already unzipped, go ahead
@@ -149,7 +154,7 @@ NAN_METHOD(MBTilesGeostats::addBuffer)
  * var mbs = new MBTilesGeostats();
  *
  * var stats = mbs.getStats();
- * 
+ *
  */
 NAN_METHOD(MBTilesGeostats::getStats)
 {
