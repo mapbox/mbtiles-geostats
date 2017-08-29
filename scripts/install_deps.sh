@@ -13,3 +13,10 @@ function install() {
 source local.env
 
 install protozero 1.5.1
+
+# install gzip-hpp headers
+if [ ! -d "vendor/gzip-hpp" ]
+then
+  mkdir -p vendor
+  git clone https://github.com/mapbox/gzip-hpp.git vendor/gzip-hpp --depth=1
+fi

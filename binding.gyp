@@ -4,7 +4,8 @@
       'error_on_warnings%':'true',
       'system_includes': [
         "-isystem <(module_root_dir)/<!(node -e \"require('nan')\")",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/"
+        "-isystem <(module_root_dir)/mason_packages/.link/include/",
+        "-isystem <(module_root_dir)/vendor/gzip-hpp/include/"
       ]
   },
   'targets': [
