@@ -1,8 +1,8 @@
+:warning: **This library is a proof of concenpt and not under active development!** :warning:
+
 # MBTiles Geostats
 
 Generate a tilestats/geostats JSON object from a series of Mapbox Vector Tile gzipped buffers.
-
-:warning: **This library under development! Please expect breaking API changes prior to a 1.x release.** :warning:
 
 # API
 
