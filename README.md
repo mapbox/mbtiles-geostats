@@ -1,4 +1,4 @@
-:warning: **This library is a proof of concenpt and not under active development!** :warning:
+:warning: **This library is a proof of concept and not under active development!** :warning:
 
 # MBTiles Geostats
 
